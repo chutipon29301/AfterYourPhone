@@ -5,6 +5,7 @@ import com.example.afteryourphone.dao.PlaceListDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -20,7 +21,18 @@ public class PlaceListDataManager {
     private ArrayList<PlaceListDetailDao> placeList;
 
     private PlaceListDataManager() {
-        HttpManager.getInstance().getApiService().getPlaceList(new LocationDao(13.760053, 100.566896))
+        placeList = new ArrayList<>();
+    }
+
+    public static PlaceListDataManager getInstance() {
+        if (instance == null) {
+            instance = new PlaceListDataManager();
+        }
+        return instance;
+    }
+
+    public void getPlace(double lat, double lon) {
+        HttpManager.getInstance().getApiService().getPlaceList(new LocationDao(lat, lon))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<PlaceListDao>() {
             @Override
@@ -30,7 +42,7 @@ public class PlaceListDataManager {
 
             @Override
             public void onNext(PlaceListDao value) {
-
+                placeList.addAll(Arrays.asList(value.getResults()));
             }
 
             @Override
@@ -45,10 +57,6 @@ public class PlaceListDataManager {
         });
     }
 
-    public static PlaceListDataManager getInstance() {
-        if (instance == null) {
-            instance = new PlaceListDataManager();
-        }
-        return instance;
-    }
+
+
 }

@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class PlaceListDao {
     @SerializedName("next_page_token")      String nextPageToken;
-    @SerializedName("results")              PlaceListDetailDao results;
+    @SerializedName("results")              PlaceListDetailDao[] results;
 
     public String getNextPageToken() {
         return nextPageToken;
@@ -18,11 +18,11 @@ public class PlaceListDao {
         this.nextPageToken = nextPageToken;
     }
 
-    public PlaceListDetailDao getResults() {
+    public PlaceListDetailDao[] getResults() {
         return results;
     }
 
-    public void setResults(PlaceListDetailDao results) {
+    public void setResults(PlaceListDetailDao[] results) {
         this.results = results;
     }
 }

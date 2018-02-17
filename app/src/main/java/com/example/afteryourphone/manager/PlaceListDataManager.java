@@ -1,5 +1,7 @@
 package com.example.afteryourphone.manager;
 
+import android.util.Log;
+
 import com.example.afteryourphone.dao.LocationDao;
 import com.example.afteryourphone.dao.PlaceListDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
@@ -60,12 +62,15 @@ public class PlaceListDataManager {
 
     public PlaceListDetailDao next() {
         if (counter >= placeList.size()) return null;
-        return placeList.get(counter++);
+        Log.d("list", "next: "+counter+","+placeList.size());
+        return placeList.get(++counter);
     }
 
     public PlaceListDetailDao previous() {
         if (counter <= 0) return null;
-        return placeList.get(counter--);
+
+        Log.d("list", "next: "+counter+","+placeList.size());
+        return placeList.get(--counter);
     }
 
 }

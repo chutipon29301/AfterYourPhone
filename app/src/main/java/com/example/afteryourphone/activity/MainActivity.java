@@ -2,13 +2,18 @@ package com.example.afteryourphone.activity;
 
 import android.annotation.SuppressLint;
 import android.location.Location;
+
 import android.os.Bundle;
+
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 
 import com.example.afteryourphone.R;
+import com.example.afteryourphone.dao.PlaceDetailDao;
+import com.example.afteryourphone.dao.PlaceListDetailDao;
+import com.example.afteryourphone.manager.PlaceListDataManager;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationClient;
     Speakerbox speakerbox;
     GoogleApiClient mGoogleApiClient;
+
+
+
     @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
 
+
+
         speakerbox = new Speakerbox(getApplication());
         speakerbox.play("Hello Non, Wakada forever!");
 
@@ -41,10 +51,9 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            // Logic to handle location object
                             Log.d(TAG, "onSuccess: "+location);
+                            PlaceListDataManager.getInstance().getPlace(location.getLatitude(),location.getLongitude());
                         }
                     }
                 });
@@ -59,18 +68,17 @@ public class MainActivity extends AppCompatActivity {
     TouchTypeDetector.TouchTypListener touchTypListener = new TouchTypeDetector.TouchTypListener() {
         @Override public void onTwoFingerSingleTap() {
             // Two fingers single tap
-//            speakerbox.play("I love cherprang");
+            speakerbox.play("You just tab with 2 Fingers,");
         }
 
         @Override public void onThreeFingerSingleTap() {
-            // Three fingers single tap
-//            speakerbox.play("rely on file");
+            // Three fingers single tap]
+            speakerbox.play("You just tab with 3 fingers,");
         }
 
         @Override public void onDoubleTap() {
             // Double tap
-
-//            speakerbox.play("BNK FORTY EIGHT");
+            speakerbox.play("You just do double tabs, ");
         }
 
         @Override public void onScroll(int scrollDirection) {
@@ -95,9 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override public void onSingleTap() {
             // Single tap
-
             speakerbox.play("Hello Non, Wakada forever!");
-
             Log.d("gesture", "tap");
         }
 
@@ -105,15 +111,20 @@ public class MainActivity extends AppCompatActivity {
             switch (swipeDirection) {
                 case TouchTypeDetector.SWIPE_DIR_UP:
                     // Swipe Up
+                    speakerbox.play("You just swipe up for more information");
                     Log.d("gesture", "onSwipe: up");
                     break;
                 case TouchTypeDetector.SWIPE_DIR_DOWN:
                     // Swipe Down
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
+
+                    speakerbox.play("Next place, "+ PlaceListDataManager.getInstance().next().getName());
                     // Swipe Left
                     break;
                 case TouchTypeDetector.SWIPE_DIR_RIGHT:
+
+                    speakerbox.play("Previous place, "+PlaceListDataManager.getInstance().previous().getName());
                     // Swipe Right
                     break;
                 default:

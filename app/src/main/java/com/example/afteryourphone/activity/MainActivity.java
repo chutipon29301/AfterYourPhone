@@ -5,16 +5,15 @@ import android.location.Location;
 
 import android.os.Bundle;
 
-import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 
 import com.example.afteryourphone.R;
-import com.example.afteryourphone.dao.LocationDao;
+
 import com.example.afteryourphone.dao.PlaceDetailDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
-import com.example.afteryourphone.manager.HttpManager;
+
 import com.example.afteryourphone.manager.LocationManager;
 import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
@@ -46,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
 
 
-
         speakerbox = new Speakerbox(getApplication());
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -62,7 +60,8 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     }
                 });
         LocationManager location = LocationManager.getInstance();
-        speakerbox.play("Current Temperature is"+ HttpManager.getInstance().getApiService().getTemp(new LocationDao(location.getlatitude(),location.getlongtitude())));
+        speakerbox.play("Tab long press to listen to the instructions");
+//        speakerbox.play("Current Temperature is"+ HttpManager.getInstance().getApiService().getTemp(new LocationDao(location.getlatitude(),location.getlongtitude())));
 
     }
 
@@ -110,7 +109,10 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
         @Override public void onSingleTap() {
             // Single tap
-            speakerbox.play("Hello Non, Wakada forever!");
+
+            PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
+            if(current==null)return;
+            speakerbox.play(current.getName());
             Log.d("gesture", "tap");
         }
 
@@ -130,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
 
                     PlaceListDetailDao next = PlaceListDataManager.getInstance().next();
-                    if(next==null) {
+                    if(next!=null) {
                         speakerbox.play("Next place, " + next.getName());
                         return;
                     }else{
@@ -157,24 +159,12 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override public void onLongPress() {
             Log.d("gesture", "longpress");
 
-            speakerbox.play("Here's the instructions.Please swipe your finger on the screen to the left for visit the next place, and" +
-                    "swipe to the right to revisit the previous one. Swipe up to listen to detail of that particular place and tab on the screen to listen again");
+            speakerbox.play("Here's the instructions,"+" Please swipe your finger on the screen to the left for visit the next place, and" +
+                    "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again");
 
         }
     };
 
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        int action = MotionEventCompat.getActionMasked(event);
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, "onTouchEvent: actionDown");
-                return true;
-        }
-        return super.onTouchEvent(event);
-    }
 
     @Override
     public void onLoad(PlaceDetailDao placeDetail) {

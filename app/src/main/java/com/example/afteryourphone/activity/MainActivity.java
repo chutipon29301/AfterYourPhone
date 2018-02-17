@@ -13,6 +13,8 @@ import android.view.MotionEvent;
 import com.example.afteryourphone.R;
 import com.example.afteryourphone.dao.PlaceDetailDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
+import com.example.afteryourphone.manager.LocationManager;
+import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
@@ -22,8 +24,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapzen.speakerbox.Speakerbox;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance {
+    public final MainActivity mainact = this;
     private static String TAG = "MainActivity";
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                         if (location != null) {
                             Log.d(TAG, "onSuccess: "+location);
                             PlaceListDataManager.getInstance().getPlace(location.getLatitude(),location.getLongitude());
+                            LocationManager.getInstance().setLocation(location);
                         }
                     }
                 });
@@ -111,8 +114,10 @@ public class MainActivity extends AppCompatActivity {
             switch (swipeDirection) {
                 case TouchTypeDetector.SWIPE_DIR_UP:
                     // Swipe Up
-                    speakerbox.play("You just swipe up for more information");
-                    Log.d("gesture", "onSwipe: up");
+                    PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
+                    PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
+                        LocationManager.getInstance().getlatitude(),LocationManager.getInstance().getlongtitude(),MainActivity.this);
+                    Log.d("id", "onSwipe: "+current.getPlaceId());
                     break;
                 case TouchTypeDetector.SWIPE_DIR_DOWN:
                     // Swipe Down
@@ -152,4 +157,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onTouchEvent(event);
     }
 
+    @Override
+    public void onLoad(PlaceDetailDao placeDetail) {
+
+        speakerbox.play(PlaceListDataManager.getInstance().current().getName()+
+                ", Distance "+placeDetail.getDistance()+
+                ", Time "+placeDetail.getTime());
+    }
 }

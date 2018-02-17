@@ -1,8 +1,13 @@
 package com.example.afteryourphone.activity;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -13,8 +18,10 @@ import com.example.afteryourphone.dao.PlaceListDetailDao;
 import com.example.afteryourphone.manager.LocationManager;
 import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
+import com.example.afteryourphone.util.Contextor;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapzen.speakerbox.Speakerbox;
 
 public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance, LocationManager.onLocationLoad {
@@ -26,11 +33,12 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
+        speakerbox = new Speakerbox(getApplication());
+        LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
 
     }
 
@@ -51,20 +59,14 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override
         public void onThreeFingerSingleTap() {
             // Three fingers single tap]
-//            Intent intent = new Intent(Intent.ACTION_CALL);
-//
-//            intent.setData(Uri.parse("tel:0814953366"));
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    ActivityCompat#requestPermissions
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for ActivityCompat#requestPermissions for more details.
-//                return;
-//            }
-//            startActivity(intent);
+            Intent intent = new Intent(Intent.ACTION_CALL);
+
+            intent.setData(Uri.parse("tel:0814953366"));
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(Contextor.getInstance().getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    startActivity(intent);
+                }
+            }
             speakerbox.play("You just tab with 3 fingers,");
         }
 
@@ -98,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override
         public void onSingleTap() {
             // Single tap
-
             PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
             if (current == null) return;
             speakerbox.play(current.getName());
@@ -109,15 +110,8 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         public void onSwipe(int swipeDirection) {
             switch (swipeDirection) {
                 case TouchTypeDetector.SWIPE_DIR_UP:
-                    // Swipe Up
-                    PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
-                    if (current == null) return;
+                    if (PlaceListDataManager.getInstance().current() == null) return;
                     LocationManager.getInstance().getLocation(MainActivity.this, MainActivity.this, REQUEST_DETAIL);
-//                    LocationManager.getInstance().getLocation(MainActivity.this, MainActivity.this);
-//                    PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
-//                            LocationManager.getInstance().getlatitude(), LocationManager.getInstance().getlongtitude(), MainActivity.this);
-                    Log.d("id", "onSwipe: " + current.getPlaceId());
-                    Log.d(TAG, "onSwipe: up");
                     break;
                 case TouchTypeDetector.SWIPE_DIR_DOWN:
                     // Swipe Down
@@ -125,10 +119,11 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
                     PlaceListDetailDao next = PlaceListDataManager.getInstance().next();
-                    if (next != null) {
-                        speakerbox.play("Next place, " + next.getName());
-                    } else {
+                    Log.i(TAG, "onSwipe: " + speakerbox);
+                    if (next == null) {
                         speakerbox.play("There's no place left to show");
+                    } else {
+                        speakerbox.play("Next place, " + next.getName());
                     }
                     // Swipe Left
                     break;
@@ -174,7 +169,9 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
     }
 
     @Override
-    public void onLoad(Location location, int requestID) {
+    public void onLoadLocation(Location location, int requestID) {
+        if (location == null) return;
+        Log.i(TAG, "onLoad: requestID = " + requestID);
         switch (requestID) {
             case REQUEST_LIST:
                 PlaceListDataManager.getInstance().getPlace(location.getLatitude(), location.getLongitude());

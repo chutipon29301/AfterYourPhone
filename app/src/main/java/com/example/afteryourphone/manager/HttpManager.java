@@ -19,7 +19,7 @@ public class HttpManager {
 
     private HttpManager(){
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Contextor.getInstance().getContext().getResources().getString(R.string.base_url))
+                .baseUrl("https://prod-18.southeastasia.logic.azure.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
@@ -33,7 +33,7 @@ public class HttpManager {
         return instance;
     }
 
-    ApiService getApiService(){
+    public ApiService getApiService(){
         return apiService;
     }
 

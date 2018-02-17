@@ -66,6 +66,13 @@ public class PlaceListDataManager {
         return placeList.get(++counter);
     }
 
+    public PlaceListDetailDao current() {
+        if (counter >= placeList.size()) return null;
+        Log.d("list", "next: "+counter+","+placeList.size());
+        return placeList.get(counter);
+    }
+
+
     public PlaceListDetailDao previous() {
         if (counter <= 0) return null;
 

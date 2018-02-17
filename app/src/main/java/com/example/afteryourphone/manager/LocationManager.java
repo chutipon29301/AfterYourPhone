@@ -15,15 +15,18 @@ public class LocationManager {
 
     private Location location;
 
-    public static LocationManager getInstance(){
-        if(instance==null){
+    public static LocationManager getInstance() {
+        if (instance == null) {
             instance = new LocationManager();
         }
         return instance;
     }
-    public double getlatitude(){
+
+    public double getlatitude() {
         return location.getLatitude();
-    } public double getlongtitude(){
+    }
+
+    public double getlongtitude() {
         return location.getLongitude();
     }
 

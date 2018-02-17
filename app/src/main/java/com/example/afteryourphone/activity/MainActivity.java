@@ -1,10 +1,15 @@
 package com.example.afteryourphone.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 
+import android.net.Uri;
 import android.os.Bundle;
 
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -33,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
     GoogleApiClient mGoogleApiClient;
 
 
-
     @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         setContentView(R.layout.activity_main);
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
-
 
 
         speakerbox = new Speakerbox(getApplication());
@@ -54,37 +57,56 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     @Override
                     public void onSuccess(Location location) {
                         if (location != null) {
-                            Log.d(TAG, "onSuccess: "+location);
-                            PlaceListDataManager.getInstance().getPlace(location.getLatitude(),location.getLongitude());
+                            Log.d(TAG, "onSuccess: " + location);
+                            PlaceListDataManager.getInstance().getPlace(location.getLatitude(), location.getLongitude());
                             LocationManager.getInstance().setLocation(location);
                         }
                     }
                 });
     }
 
-    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
         // Setup onTouchEvent for detecting type of touch gesture
         Sensey.getInstance().setupDispatchTouchEvent(event);
         return super.dispatchTouchEvent(event);
     }
 
     TouchTypeDetector.TouchTypListener touchTypListener = new TouchTypeDetector.TouchTypListener() {
-        @Override public void onTwoFingerSingleTap() {
+        @Override
+        public void onTwoFingerSingleTap() {
             // Two fingers single tap
             speakerbox.play("You just tab with 2 Fingers,");
         }
 
-        @Override public void onThreeFingerSingleTap() {
+        @Override
+        public void onThreeFingerSingleTap() {
             // Three fingers single tap]
+//            Intent intent = new Intent(Intent.ACTION_CALL);
+//
+//            intent.setData(Uri.parse("tel:0814953366"));
+//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+//                // TODO: Consider calling
+//                //    ActivityCompat#requestPermissions
+//                // here to request the missing permissions, and then overriding
+//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//                //                                          int[] grantResults)
+//                // to handle the case where the user grants the permission. See the documentation
+//                // for ActivityCompat#requestPermissions for more details.
+//                return;
+//            }
+//            startActivity(intent);
             speakerbox.play("You just tab with 3 fingers,");
         }
 
-        @Override public void onDoubleTap() {
+        @Override
+        public void onDoubleTap() {
             // Double tap
             speakerbox.play("You just do double tabs, ");
         }
 
-        @Override public void onScroll(int scrollDirection) {
+        @Override
+        public void onScroll(int scrollDirection) {
             switch (scrollDirection) {
                 case TouchTypeDetector.SCROLL_DIR_UP:
                     // Scrolling Up
@@ -104,32 +126,38 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             }
         }
 
-        @Override public void onSingleTap() {
+        @Override
+        public void onSingleTap() {
             // Single tap
             speakerbox.play("Hello Non, Wakada forever!");
             Log.d("gesture", "tap");
         }
 
-        @Override public void onSwipe(int swipeDirection) {
+        @Override
+        public void onSwipe(int swipeDirection) {
             switch (swipeDirection) {
                 case TouchTypeDetector.SWIPE_DIR_UP:
                     // Swipe Up
                     PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
                     PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
-                        LocationManager.getInstance().getlatitude(),LocationManager.getInstance().getlongtitude(),MainActivity.this);
-                    Log.d("id", "onSwipe: "+current.getPlaceId());
+                            LocationManager.getInstance().getlatitude(), LocationManager.getInstance().getlongtitude(), MainActivity.this);
+                    Log.d("id", "onSwipe: " + current.getPlaceId());
+                    Log.d(TAG, "onSwipe: up");
                     break;
                 case TouchTypeDetector.SWIPE_DIR_DOWN:
                     // Swipe Down
+                    Log.d(TAG, "onSwipe: down");
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
 
-                    speakerbox.play("Next place, "+ PlaceListDataManager.getInstance().next().getName());
+                    speakerbox.play("Next place, " + PlaceListDataManager.getInstance().next().getName());
+                    Log.d(TAG, "onSwipe: left");
                     // Swipe Left
                     break;
                 case TouchTypeDetector.SWIPE_DIR_RIGHT:
 
-                    speakerbox.play("Previous place, "+PlaceListDataManager.getInstance().previous().getName());
+                    speakerbox.play("Previous place, " + PlaceListDataManager.getInstance().previous().getName());
+                    Log.d(TAG, "onSwipe: right");
                     // Swipe Right
                     break;
                 default:
@@ -138,30 +166,18 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             }
         }
 
-        @Override public void onLongPress() {
+        @Override
+        public void onLongPress() {
             Log.d("gesture", "longpress");
             // Long press
         }
     };
 
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        int action = MotionEventCompat.getActionMasked(event);
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, "onTouchEvent: actionDown");
-                return true;
-        }
-        return super.onTouchEvent(event);
-    }
-
     @Override
     public void onLoad(PlaceDetailDao placeDetail) {
 
-        speakerbox.play(PlaceListDataManager.getInstance().current().getName()+
-                ", Distance "+placeDetail.getDistance()+
-                ", Time "+placeDetail.getTime());
+        speakerbox.play(PlaceListDataManager.getInstance().current().getName() +
+                ", Distance " + placeDetail.getDistance() +
+                ", Time " + placeDetail.getTime());
     }
 }

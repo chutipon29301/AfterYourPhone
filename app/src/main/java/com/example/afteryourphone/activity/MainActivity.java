@@ -59,18 +59,18 @@ public class MainActivity extends AppCompatActivity {
     TouchTypeDetector.TouchTypListener touchTypListener = new TouchTypeDetector.TouchTypListener() {
         @Override public void onTwoFingerSingleTap() {
             // Two fingers single tap
-            speakerbox.play("I love cherprang");
+//            speakerbox.play("I love cherprang");
         }
 
         @Override public void onThreeFingerSingleTap() {
             // Three fingers single tap
-            speakerbox.play("rely on file");
+//            speakerbox.play("rely on file");
         }
 
         @Override public void onDoubleTap() {
             // Double tap
 
-            speakerbox.play("BNK FORTY EIGHT");
+//            speakerbox.play("BNK FORTY EIGHT");
         }
 
         @Override public void onScroll(int scrollDirection) {

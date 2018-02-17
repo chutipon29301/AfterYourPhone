@@ -19,6 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 public class PlaceListDataManager {
     private static PlaceListDataManager instance;
     private ArrayList<PlaceListDetailDao> placeList;
+    private int counter = 0;
 
     private PlaceListDataManager() {
         placeList = new ArrayList<>();
@@ -57,6 +58,14 @@ public class PlaceListDataManager {
         });
     }
 
+    public PlaceListDetailDao next() {
+        if (counter >= placeList.size()) return null;
+        return placeList.get(counter++);
+    }
 
+    public PlaceListDetailDao previous() {
+        if (counter <= 0) return null;
+        return placeList.get(counter--);
+    }
 
 }

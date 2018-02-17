@@ -1,17 +1,12 @@
 package com.example.afteryourphone.activity;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.support.v4.app.ActivityCompat;
+import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.example.afteryourphone.R;
 import com.github.nisrulz.sensey.Sensey;
@@ -41,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         speakerbox = new Speakerbox(getApplication());
         speakerbox.play("Hello Non, Wakada forever!");
 
-        View myView = findViewById(R.id.myView);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -54,11 +48,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
-
-
-//        myView.setOnTouchListener(touchListener);
-
-
     }
 
     @Override public boolean dispatchTouchEvent(MotionEvent event) {

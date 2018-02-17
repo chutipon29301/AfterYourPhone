@@ -1,11 +1,13 @@
 package com.example.afteryourphone.activity;
 
-import android.annotation.SuppressLint;
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
-
+import android.net.Uri;
 import android.os.Bundle;
-
-import android.support.v4.view.MotionEventCompat;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -13,78 +15,72 @@ import android.view.MotionEvent;
 import com.example.afteryourphone.R;
 import com.example.afteryourphone.dao.PlaceDetailDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
+import com.example.afteryourphone.dao.TempResponseDao;
 import com.example.afteryourphone.manager.LocationManager;
 import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
+import com.example.afteryourphone.manager.TempManager;
+import com.example.afteryourphone.util.Contextor;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapzen.speakerbox.Speakerbox;
 
-public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance {
-    public final MainActivity mainact = this;
+public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance, LocationManager.onLocationLoad, TempManager.onLoadComplete {
     private static String TAG = "MainActivity";
+    private static final int REQUEST_LIST = 0;
+    private static final int REQUEST_DETAIL = 1;
+    private static final int REQUEST_TEMP = 2;
 
-    private FusedLocationProviderClient mFusedLocationClient;
     Speakerbox speakerbox;
-    GoogleApiClient mGoogleApiClient;
 
-
-
-    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
-
-
-
         speakerbox = new Speakerbox(getApplication());
-        speakerbox.play("Hello Non, Wakada forever!");
+        LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
+        LocationManager.getInstance().getLocation(this, this, REQUEST_TEMP);
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            Log.d(TAG, "onSuccess: "+location);
-                            PlaceListDataManager.getInstance().getPlace(location.getLatitude(),location.getLongitude());
-                            LocationManager.getInstance().setLocation(location);
-                        }
-                    }
-                });
     }
 
-    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
         // Setup onTouchEvent for detecting type of touch gesture
         Sensey.getInstance().setupDispatchTouchEvent(event);
         return super.dispatchTouchEvent(event);
     }
 
     TouchTypeDetector.TouchTypListener touchTypListener = new TouchTypeDetector.TouchTypListener() {
-        @Override public void onTwoFingerSingleTap() {
+        @Override
+        public void onTwoFingerSingleTap() {
             // Two fingers single tap
             speakerbox.play("You just tab with 2 Fingers,");
         }
 
-        @Override public void onThreeFingerSingleTap() {
+        @Override
+        public void onThreeFingerSingleTap() {
             // Three fingers single tap]
+            Intent intent = new Intent(Intent.ACTION_CALL);
+
+            intent.setData(Uri.parse("tel:0814953366"));
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(Contextor.getInstance().getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    startActivity(intent);
+                }
+            }
             speakerbox.play("You just tab with 3 fingers,");
         }
 
-        @Override public void onDoubleTap() {
+        @Override
+        public void onDoubleTap() {
             // Double tap
             speakerbox.play("You just do double tabs, ");
         }
 
-        @Override public void onScroll(int scrollDirection) {
+        @Override
+        public void onScroll(int scrollDirection) {
             switch (scrollDirection) {
                 case TouchTypeDetector.SCROLL_DIR_UP:
                     // Scrolling Up
@@ -104,32 +100,43 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             }
         }
 
-        @Override public void onSingleTap() {
+        @Override
+        public void onSingleTap() {
             // Single tap
-            speakerbox.play("Hello Non, Wakada forever!");
+            PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
+            if (current == null) return;
+            speakerbox.play(current.getName());
             Log.d("gesture", "tap");
         }
 
-        @Override public void onSwipe(int swipeDirection) {
+        @Override
+        public void onSwipe(int swipeDirection) {
             switch (swipeDirection) {
                 case TouchTypeDetector.SWIPE_DIR_UP:
-                    // Swipe Up
-                    PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
-                    PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
-                        LocationManager.getInstance().getlatitude(),LocationManager.getInstance().getlongtitude(),MainActivity.this);
-                    Log.d("id", "onSwipe: "+current.getPlaceId());
+                    if (PlaceListDataManager.getInstance().current() == null) return;
+                    LocationManager.getInstance().getLocation(MainActivity.this, MainActivity.this, REQUEST_DETAIL);
                     break;
                 case TouchTypeDetector.SWIPE_DIR_DOWN:
                     // Swipe Down
+                    Log.d(TAG, "onSwipe: down");
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
-
-                    speakerbox.play("Next place, "+ PlaceListDataManager.getInstance().next().getName());
+                    PlaceListDetailDao next = PlaceListDataManager.getInstance().next();
+                    Log.i(TAG, "onSwipe: " + speakerbox);
+                    if (next == null) {
+                        speakerbox.play("There's no place left to show");
+                    } else {
+                        speakerbox.play("Next place, " + next.getName());
+                    }
                     // Swipe Left
                     break;
                 case TouchTypeDetector.SWIPE_DIR_RIGHT:
-
-                    speakerbox.play("Previous place, "+PlaceListDataManager.getInstance().previous().getName());
+                    PlaceListDetailDao previous = PlaceListDataManager.getInstance().previous();
+                    if (previous == null) {
+                        speakerbox.play("There's no previous place to show");
+                    } else {
+                        speakerbox.play("Previous place, " + previous.getName());
+                    }
                     // Swipe Right
                     break;
                 default:
@@ -138,30 +145,51 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             }
         }
 
-        @Override public void onLongPress() {
+        @Override
+        public void onLongPress() {
             Log.d("gesture", "longpress");
-            // Long press
+            speakerbox.play("Here's the instructions," + " Please swipe your finger on the screen to the left for visit the next place, and" +
+                    "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again");
+
         }
     };
 
-
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        int action = MotionEventCompat.getActionMasked(event);
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, "onTouchEvent: actionDown");
-                return true;
-        }
-        return super.onTouchEvent(event);
+    public void onLoad(PlaceDetailDao placeDetail) {
+        speakerbox.play(PlaceListDataManager.getInstance().current().getName() +
+                ", Distance " + Math.round(placeDetail.getDistance() / 100) / 10.0 + " kilometers" +
+                ", Estimated time " + Math.round(placeDetail.getTime() / 6) / 10.0 + " minutes");
     }
 
     @Override
-    public void onLoad(PlaceDetailDao placeDetail) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case LocationManager.LOCATION_REQUEST:
+                LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
+                break;
+        }
+    }
 
-        speakerbox.play(PlaceListDataManager.getInstance().current().getName()+
-                ", Distance "+ Math.round(placeDetail.getDistance()/100)/10.0 + " kilometers" +
-                ", Estimated time "+ Math.round(placeDetail.getTime() / 6)/10.0 + " minutes" );
+    @Override
+    public void onLoadLocation(Location location, int requestID) {
+        if (location == null) return;
+        Log.i(TAG, "onLoad: requestID = " + requestID);
+        switch (requestID) {
+            case REQUEST_LIST:
+                PlaceListDataManager.getInstance().getPlace(location.getLatitude(), location.getLongitude());
+                break;
+            case REQUEST_DETAIL:
+                PlaceDetailDataManager.getInstance().getPlaceDetail(PlaceListDataManager.getInstance().current().getPlaceId(), location.getLatitude(), location.getLongitude(), this);
+                break;
+            case REQUEST_TEMP:
+                TempManager.getInstance().getTemp(location.getLatitude(), location.getLongitude(), this);
+                break;
+        }
+    }
+
+    @Override
+    public void onLoadTemp(TempResponseDao temp) {
+//        TODO: read text
     }
 }

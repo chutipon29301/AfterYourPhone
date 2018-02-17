@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
     public void onLoad(PlaceDetailDao placeDetail) {
 
         speakerbox.play(PlaceListDataManager.getInstance().current().getName()+
-                ", Distance "+placeDetail.getDistance()+
-                ", Time "+placeDetail.getTime());
+                ", Distance "+ Math.round(placeDetail.getDistance()/100)/10.0 + " kilometers" +
+                ", Estimated time "+ Math.round(placeDetail.getTime() / 6)/10.0 + " minutes" );
     }
 }

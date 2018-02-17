@@ -15,19 +15,21 @@ import android.view.MotionEvent;
 import com.example.afteryourphone.R;
 import com.example.afteryourphone.dao.PlaceDetailDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
+import com.example.afteryourphone.dao.TempResponseDao;
 import com.example.afteryourphone.manager.LocationManager;
 import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
+import com.example.afteryourphone.manager.TempManager;
 import com.example.afteryourphone.util.Contextor;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapzen.speakerbox.Speakerbox;
 
-public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance, LocationManager.onLocationLoad {
+public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance, LocationManager.onLocationLoad, TempManager.onLoadComplete {
     private static String TAG = "MainActivity";
     private static final int REQUEST_LIST = 0;
     private static final int REQUEST_DETAIL = 1;
+    private static final int REQUEST_TEMP = 2;
 
     Speakerbox speakerbox;
 
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
         speakerbox = new Speakerbox(getApplication());
         LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
+        LocationManager.getInstance().getLocation(this, this, REQUEST_TEMP);
 
     }
 
@@ -179,6 +182,14 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             case REQUEST_DETAIL:
                 PlaceDetailDataManager.getInstance().getPlaceDetail(PlaceListDataManager.getInstance().current().getPlaceId(), location.getLatitude(), location.getLongitude(), this);
                 break;
+            case REQUEST_TEMP:
+                TempManager.getInstance().getTemp(location.getLatitude(), location.getLongitude(), this);
+                break;
         }
+    }
+
+    @Override
+    public void onLoadTemp(TempResponseDao temp) {
+//        TODO: read text
     }
 }

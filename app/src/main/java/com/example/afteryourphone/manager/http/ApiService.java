@@ -4,6 +4,7 @@ import com.example.afteryourphone.dao.LocationDao;
 import com.example.afteryourphone.dao.PlaceDao;
 import com.example.afteryourphone.dao.PlaceDetailDao;
 import com.example.afteryourphone.dao.PlaceListDao;
+import com.example.afteryourphone.dao.TempResponseDao;
 
 import io.reactivex.Observable;
 import retrofit2.http.Body;
@@ -22,6 +23,6 @@ public interface ApiService {
     Observable<PlaceDetailDao> getPlaceDetail(@Body PlaceDao placeDao);
 
     @POST("https://prod-24.southeastasia.logic.azure.com/workflows/9377fa40e5f24c00bc9b4fc84ecbcb1d/triggers/manual/paths/invoke/weather?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=PcxhUj3ErMvdVuG4EXms_3H5ZxxSRbpWzSzJQ_kPPpk")
-    Observable<PlaceListDao> getTemp(@Body LocationDao locationDao);
+    Observable<TempResponseDao> getTemp(@Body LocationDao locationDao);
 
 }

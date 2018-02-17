@@ -1,5 +1,7 @@
 package com.example.afteryourphone.manager;
 
+import android.util.Log;
+
 import com.example.afteryourphone.dao.LocationDao;
 import com.example.afteryourphone.dao.PlaceListDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
@@ -19,6 +21,7 @@ import io.reactivex.schedulers.Schedulers;
 public class PlaceListDataManager {
     private static PlaceListDataManager instance;
     private ArrayList<PlaceListDetailDao> placeList;
+    private int counter = 0;
 
     private PlaceListDataManager() {
         placeList = new ArrayList<>();
@@ -57,6 +60,17 @@ public class PlaceListDataManager {
         });
     }
 
+    public PlaceListDetailDao next() {
+        if (counter >= placeList.size()) return null;
+        Log.d("list", "next: "+counter+","+placeList.size());
+        return placeList.get(++counter);
+    }
 
+    public PlaceListDetailDao previous() {
+        if (counter <= 0) return null;
+
+        Log.d("list", "next: "+counter+","+placeList.size());
+        return placeList.get(--counter);
+    }
 
 }

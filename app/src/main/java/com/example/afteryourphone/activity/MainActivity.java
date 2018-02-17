@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.example.afteryourphone.R;
+import com.example.afteryourphone.dao.PlaceDetailDao;
+import com.example.afteryourphone.dao.PlaceListDetailDao;
 import com.example.afteryourphone.manager.PlaceListDataManager;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
@@ -27,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationClient;
     Speakerbox speakerbox;
     GoogleApiClient mGoogleApiClient;
+
+
+
     @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
+
+
 
         speakerbox = new Speakerbox(getApplication());
         speakerbox.play("Hello Non, Wakada forever!");
@@ -65,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override public void onThreeFingerSingleTap() {
-            // Three fingers single tap
+            // Three fingers single tap]
             speakerbox.play("You just tab with 3 fingers,");
         }
 
@@ -112,12 +119,12 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
 
-                    speakerbox.play("You just swipe left for the next page");
+                    speakerbox.play("Next place, "+ PlaceListDataManager.getInstance().next().getName());
                     // Swipe Left
                     break;
                 case TouchTypeDetector.SWIPE_DIR_RIGHT:
 
-                    speakerbox.play("You just swipe right to the previous page");
+                    speakerbox.play("Previous place, "+PlaceListDataManager.getInstance().previous().getName());
                     // Swipe Right
                     break;
                 default:

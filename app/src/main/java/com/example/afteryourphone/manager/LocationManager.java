@@ -21,6 +21,9 @@ public class LocationManager {
         }
         return instance;
     }
+    public Location getlocation(){
+        return location;
+    }
     public double getlatitude(){
         return location.getLatitude();
     } public double getlongtitude(){

@@ -10,8 +10,8 @@ public class PlaceDetailDao {
     @SerializedName("distance")     double distance;
     @SerializedName("time")         double time;
 
-    public float getDistance() {
-        return (int)distance;
+    public double getDistance() {
+        return distance;
     }
 
     public void setDistance(double distance) {
@@ -25,4 +25,5 @@ public class PlaceDetailDao {
     public void setTime(double time) {
         this.time = time;
     }
+
 }

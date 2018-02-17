@@ -1,16 +1,8 @@
 package com.example.afteryourphone.activity;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
-
-import android.net.Uri;
 import android.os.Bundle;
-
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.MotionEventCompat;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -23,22 +15,15 @@ import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapzen.speakerbox.Speakerbox;
 
-public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance {
-    public final MainActivity mainact = this;
+public class MainActivity extends AppCompatActivity implements PlaceDetailDataManager.onLoadDistance, LocationManager.onLocationLoad {
     private static String TAG = "MainActivity";
+    private static final int REQUEST_LIST = 0;
+    private static final int REQUEST_DETAIL = 1;
 
-    private FusedLocationProviderClient mFusedLocationClient;
     Speakerbox speakerbox;
-    GoogleApiClient mGoogleApiClient;
 
-
-    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -47,22 +32,25 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
 
-
         speakerbox = new Speakerbox(getApplication());
-        speakerbox.play("Hello Non, Wakada forever!");
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            Log.d(TAG, "onSuccess: " + location);
-                            PlaceListDataManager.getInstance().getPlace(location.getLatitude(), location.getLongitude());
-                            LocationManager.getInstance().setLocation(location);
-                        }
-                    }
-                });
+        LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
+
+//        FusedLocationProviderClient mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        mFusedLocationClient.getLastLocation()
+//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                    @Override
+//                    public void onSuccess(Location location) {
+//                        if (location != null) {
+//                            Log.d(TAG, "onSuccess: " + location);
+//                            PlaceListDataManager.getInstance().getPlace(location.getLatitude(), location.getLongitude());
+//                            LocationManager.getInstance().setLocation(location);
+//                        }
+//                    }
+//                });
+//        LocationManager location = LocationManager.getInstance();
+//        speakerbox.play("Current Temperature is" + HttpManager.getInstance().getApiService().getTemp(new LocationDao(location.getlatitude(), location.getlongtitude())));
+
     }
 
     @Override
@@ -139,8 +127,11 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                 case TouchTypeDetector.SWIPE_DIR_UP:
                     // Swipe Up
                     PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
-                    PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
-                            LocationManager.getInstance().getlatitude(), LocationManager.getInstance().getlongtitude(), MainActivity.this);
+                    if (current == null) return;
+                    LocationManager.getInstance().getLocation(MainActivity.this, MainActivity.this, REQUEST_DETAIL);
+//                    LocationManager.getInstance().getLocation(MainActivity.this, MainActivity.this);
+//                    PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
+//                            LocationManager.getInstance().getlatitude(), LocationManager.getInstance().getlongtitude(), MainActivity.this);
                     Log.d("id", "onSwipe: " + current.getPlaceId());
                     Log.d(TAG, "onSwipe: up");
                     break;
@@ -149,15 +140,21 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     Log.d(TAG, "onSwipe: down");
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
-
-                    speakerbox.play("Next place, " + PlaceListDataManager.getInstance().next().getName());
-                    Log.d(TAG, "onSwipe: left");
+                    PlaceListDetailDao next = PlaceListDataManager.getInstance().next();
+                    if (next == null) {
+                        speakerbox.play("Next place, " + next.getName());
+                    } else {
+                        speakerbox.play("There's no place left to show");
+                    }
                     // Swipe Left
                     break;
                 case TouchTypeDetector.SWIPE_DIR_RIGHT:
-
-                    speakerbox.play("Previous place, " + PlaceListDataManager.getInstance().previous().getName());
-                    Log.d(TAG, "onSwipe: right");
+                    PlaceListDetailDao previous = PlaceListDataManager.getInstance().previous();
+                    if (previous == null) {
+                        speakerbox.play("There's no previous place to show");
+                    } else {
+                        speakerbox.play("Previous place, " + previous.getName());
+                    }
                     // Swipe Right
                     break;
                 default:
@@ -169,15 +166,39 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override
         public void onLongPress() {
             Log.d("gesture", "longpress");
-            // Long press
+
+            speakerbox.play("Here's the instructions. Please swipe your finger on the screen to the left for visit the next place, and" +
+                    "swipe to the right to revisit the previous one. Swipe up to listen to detail of that particular place and tab on the screen to listen again");
+
         }
     };
 
     @Override
     public void onLoad(PlaceDetailDao placeDetail) {
-
         speakerbox.play(PlaceListDataManager.getInstance().current().getName() +
                 ", Distance " + placeDetail.getDistance() +
                 ", Time " + placeDetail.getTime());
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case LocationManager.LOCATION_REQUEST:
+                LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
+                break;
+        }
+    }
+
+    @Override
+    public void onLoad(Location location, int requestID) {
+        switch (requestID) {
+            case REQUEST_LIST:
+                PlaceListDataManager.getInstance().getPlace(location.getLatitude(), location.getLongitude());
+                break;
+            case REQUEST_DETAIL:
+                PlaceDetailDataManager.getInstance().getPlaceDetail(PlaceListDataManager.getInstance().current().getPlaceId(), location.getLatitude(), location.getLongitude(), this);
+                break;
+        }
     }
 }

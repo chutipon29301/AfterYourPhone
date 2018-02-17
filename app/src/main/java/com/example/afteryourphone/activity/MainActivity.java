@@ -20,13 +20,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.mapzen.speakerbox.Speakerbox;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "MainActivity";
-    private GestureDetector mDetector;
 
     private FusedLocationProviderClient mFusedLocationClient;
+    Speakerbox speakerbox;
     GoogleApiClient mGoogleApiClient;
     @SuppressLint("MissingPermission")
     @Override
@@ -36,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Sensey.getInstance().init(this);
         Sensey.getInstance().startTouchTypeDetection(this, touchTypListener);
+
+        speakerbox = new Speakerbox(getApplication());
+        speakerbox.play("Hello Non, Wakada forever!");
 
         View myView = findViewById(R.id.myView);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -66,14 +70,18 @@ public class MainActivity extends AppCompatActivity {
     TouchTypeDetector.TouchTypListener touchTypListener = new TouchTypeDetector.TouchTypListener() {
         @Override public void onTwoFingerSingleTap() {
             // Two fingers single tap
+            speakerbox.play("I love cherprang");
         }
 
         @Override public void onThreeFingerSingleTap() {
             // Three fingers single tap
+            speakerbox.play("rely on file");
         }
 
         @Override public void onDoubleTap() {
             // Double tap
+
+            speakerbox.play("BNK FORTY EIGHT");
         }
 
         @Override public void onScroll(int scrollDirection) {
@@ -98,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override public void onSingleTap() {
             // Single tap
+
+            speakerbox.play("Hello Non, Wakada forever!");
 
             Log.d("gesture", "tap");
         }
@@ -137,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 Log.d(TAG, "onTouchEvent: actionDown");
-
                 return true;
         }
         return super.onTouchEvent(event);

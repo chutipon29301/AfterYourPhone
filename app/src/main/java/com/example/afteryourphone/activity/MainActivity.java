@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.example.afteryourphone.R;
+import com.example.afteryourphone.dao.LocationDao;
 import com.example.afteryourphone.dao.PlaceDetailDao;
 import com.example.afteryourphone.dao.PlaceListDetailDao;
+import com.example.afteryourphone.manager.HttpManager;
 import com.example.afteryourphone.manager.LocationManager;
 import com.example.afteryourphone.manager.PlaceDetailDataManager;
 import com.example.afteryourphone.manager.PlaceListDataManager;
@@ -46,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
 
         speakerbox = new Speakerbox(getApplication());
-        speakerbox.play("Hello Non, Wakada forever!");
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationClient.getLastLocation()
@@ -60,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                         }
                     }
                 });
+        LocationManager location = LocationManager.getInstance();
+        speakerbox.play("Current Temperature is"+ HttpManager.getInstance().getApiService().getTemp(new LocationDao(location.getlatitude(),location.getlongtitude())));
+
     }
 
     @Override public boolean dispatchTouchEvent(MotionEvent event) {
@@ -115,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                 case TouchTypeDetector.SWIPE_DIR_UP:
                     // Swipe Up
                     PlaceListDetailDao current = PlaceListDataManager.getInstance().current();
+                    if(current==null)return;
                     PlaceDetailDataManager.getInstance().getPlaceDetail(current.getPlaceId(),
                         LocationManager.getInstance().getlatitude(),LocationManager.getInstance().getlongtitude(),MainActivity.this);
                     Log.d("id", "onSwipe: "+current.getPlaceId());
@@ -124,12 +129,23 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     break;
                 case TouchTypeDetector.SWIPE_DIR_LEFT:
 
-                    speakerbox.play("Next place, "+ PlaceListDataManager.getInstance().next().getName());
+                    PlaceListDetailDao next = PlaceListDataManager.getInstance().next();
+                    if(next==null) {
+                        speakerbox.play("Next place, " + next.getName());
+                        return;
+                    }else{
+                        speakerbox.play("There's no place left to show");
+                    }
                     // Swipe Left
                     break;
                 case TouchTypeDetector.SWIPE_DIR_RIGHT:
-
-                    speakerbox.play("Previous place, "+PlaceListDataManager.getInstance().previous().getName());
+                    PlaceListDetailDao previous = PlaceListDataManager.getInstance().previous();
+                    if(previous==null){
+                        speakerbox.play("There's no previous place to show");
+                        return;
+                    }else {
+                        speakerbox.play("Previous place, " + previous.getName());
+                    }
                     // Swipe Right
                     break;
                 default:
@@ -140,7 +156,10 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
         @Override public void onLongPress() {
             Log.d("gesture", "longpress");
-            // Long press
+
+            speakerbox.play("Here's the instructions.Please swipe your finger on the screen to the left for visit the next place, and" +
+                    "swipe to the right to revisit the previous one. Swipe up to listen to detail of that particular place and tab on the screen to listen again");
+
         }
     };
 

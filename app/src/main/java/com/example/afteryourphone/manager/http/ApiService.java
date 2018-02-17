@@ -1,5 +1,8 @@
 package com.example.afteryourphone.manager.http;
 
+import com.example.afteryourphone.dao.LocationDao;
+import com.example.afteryourphone.dao.PlaceListDao;
+
 import io.reactivex.Observable;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
@@ -70,4 +73,7 @@ public interface ApiService {
 //    @FormUrlEncoded
 //    @POST("/post/v1/isInReadLater")
 //    Observable<CheckReadLaterDao> checkReadLater(@Field("userID") String userID, @Field("reviewID") String reviewID);
+
+    @POST("https://prod-18.southeastasia.logic.azure.com/workflows/5e98e1bc5e2a463c86c494ab59e358d9/triggers/manual/paths/invoke/location?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=XJ9Fhh2BmefTg_tufIHxyiJGIfu6n8jLRFv7et822X8")
+    Observable<PlaceListDao> getPlaceList(@Body LocationDao locationDao);
 }

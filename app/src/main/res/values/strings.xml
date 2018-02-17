@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">AfterYourPhone</string>
-    <string name="base_url">Hello World</string>
+    <string name="base_url">https://</string>
 </resources>

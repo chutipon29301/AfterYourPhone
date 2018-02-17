@@ -1,21 +1,16 @@
 package com.example.afteryourphone.activity;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.afteryourphone.R;
 import com.github.nisrulz.sensey.Sensey;
-import com.github.nisrulz.sensey.ShakeDetector;
 import com.github.nisrulz.sensey.TouchTypeDetector;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -23,7 +18,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapzen.speakerbox.Speakerbox;
 
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,9 +44,7 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            // Logic to handle location object
                             Log.d(TAG, "onSuccess: "+location);
                         }
                     }
@@ -109,9 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override public void onSingleTap() {
             // Single tap
-
             speakerbox.play("Hello Non, Wakada forever!");
-
             Log.d("gesture", "tap");
         }
 

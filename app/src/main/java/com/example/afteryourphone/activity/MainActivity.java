@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
     private static final int REQUEST_LIST = 0;
     private static final int REQUEST_DETAIL = 1;
     private static final int REQUEST_TEMP = 2;
+    private static final int REQUEST_CALL_PERMISSION = 3;
     private boolean firstSwipe = true;
 
     Speakerbox speakerbox;
@@ -61,8 +62,8 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override
         public void onTwoFingerSingleTap() {
             // Two fingers single tap
-            v.vibrate(500);
-            speakerbox.play("You just tab with 2 Fingers,");
+//            v.vibrate(500);
+//            speakerbox.play("You just tab with 2 Fingers,");
         }
 
         @Override
@@ -72,11 +73,17 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             v.vibrate(500);
             intent.setData(Uri.parse("tel:0814953366"));
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.checkSelfPermission(Contextor.getInstance().getContext(), Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CALL_PHONE)) {
+                    speakerbox.play("Please allow calling permission");
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PERMISSION);
+                } else {
+                    speakerbox.play("Calling");
                     startActivity(intent);
                 }
+            } else {
+                speakerbox.play("Please allow calling permission");
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PERMISSION);
             }
-            speakerbox.play("You just tab with 3 fingers,");
         }
 
         @Override
@@ -136,11 +143,10 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     if (next == null) {
                         speakerbox.play("There's no place left to show");
                     } else {
-                        if ( firstSwipe ) {
+                        if (firstSwipe) {
                             speakerbox.play(next.getName());
                             firstSwipe = !firstSwipe;
-                        }
-                        else  speakerbox.play("Next place, " + next.getName());
+                        } else speakerbox.play("Next place, " + next.getName());
                     }
                     // Swipe Left
                     break;
@@ -164,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             v.vibrate(600);
             Log.d("gesture", "longpress");
             speakerbox.play("Here's the instructions," + " Please swipe your finger on the screen to the left for visit the next place, and" +
-                    "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again");
+                    "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again" + "Tab 3 fingers to call emergency contact");
 
         }
     };
@@ -208,4 +214,6 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 //        speakerbox.play("The temperature in " + temp.getLocation().substring(0, temp.getLocation().indexOf('\'')));
         speakerbox.play("Currently, It's " + temp.getRain() + " around you and the temperature is " + temp.getTemp() + " degree celsius, Long press for help ");
     }
+
+
 }

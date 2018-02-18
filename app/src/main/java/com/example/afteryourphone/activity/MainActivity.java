@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         public void onLongPress() {
             Log.d("gesture", "longpress");
             speakerbox.play("Here's the instructions," + " Please swipe your finger on the screen to the left for visit the next place, and" +
-                    "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again");
+                    "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again"+"Tab 3 fingers to call emergency contact");
 
         }
     };

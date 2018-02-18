@@ -9,6 +9,15 @@ import com.google.gson.annotations.SerializedName;
 public class TempResponseDao {
     @SerializedName("rain") String rain;
     @SerializedName("temp") double temp;
+    @SerializedName("location") String location;
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
     public String getRain() {
         return rain;

@@ -2,11 +2,13 @@ package com.example.afteryourphone.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,8 +33,10 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
     private static final int REQUEST_LIST = 0;
     private static final int REQUEST_DETAIL = 1;
     private static final int REQUEST_TEMP = 2;
+    private boolean firstSwipe = true;
 
     Speakerbox speakerbox;
+    Vibrator v;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         speakerbox = new Speakerbox(getApplication());
         LocationManager.getInstance().getLocation(this, this, REQUEST_LIST);
         LocationManager.getInstance().getLocation(this, this, REQUEST_TEMP);
-
+        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override
         public void onTwoFingerSingleTap() {
             // Two fingers single tap
+            v.vibrate(500);
             speakerbox.play("You just tab with 2 Fingers,");
         }
 
@@ -64,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         public void onThreeFingerSingleTap() {
             // Three fingers single tap]
             Intent intent = new Intent(Intent.ACTION_CALL);
-
+            v.vibrate(500);
             intent.setData(Uri.parse("tel:0814953366"));
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.checkSelfPermission(Contextor.getInstance().getContext(), Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
@@ -77,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
         @Override
         public void onDoubleTap() {
             // Double tap
+            v.vibrate(100);
             speakerbox.play("You just do double tabs, ");
         }
 
@@ -112,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
         @Override
         public void onSwipe(int swipeDirection) {
+            // Vibrate for 500 milliseconds
+            v.vibrate(50);
+
             switch (swipeDirection) {
                 case TouchTypeDetector.SWIPE_DIR_UP:
                     if (PlaceListDataManager.getInstance().current() == null) return;
@@ -127,7 +136,11 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
                     if (next == null) {
                         speakerbox.play("There's no place left to show");
                     } else {
-                        speakerbox.play("Next place, " + next.getName());
+                        if ( firstSwipe ) {
+                            speakerbox.play(next.getName());
+                            firstSwipe = !firstSwipe;
+                        }
+                        else  speakerbox.play("Next place, " + next.getName());
                     }
                     // Swipe Left
                     break;
@@ -148,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
         @Override
         public void onLongPress() {
+            v.vibrate(600);
             Log.d("gesture", "longpress");
             speakerbox.play("Here's the instructions," + " Please swipe your finger on the screen to the left for visit the next place, and" +
                     "swipe to the right to revisit the previous one, Swipe up to listen to detail of that particular place and tab on the screen to listen again"+"Tab 3 fingers to call emergency contact");
@@ -191,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
 
     @Override
     public void onLoadTemp(TempResponseDao temp) {
-//        TODO: read text
+//        speakerbox.play("The temperature in " + temp.getLocation().substring(0, temp.getLocation().indexOf('\'')));
+        speakerbox.play("Currently, It's " + temp.getRain() + " around you and the temperature is " + temp.getTemp() + " degree celsius, Long press for help ");
     }
 }

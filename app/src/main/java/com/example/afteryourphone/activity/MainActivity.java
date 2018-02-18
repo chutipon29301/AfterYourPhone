@@ -1,6 +1,7 @@
 package com.example.afteryourphone.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -65,8 +66,8 @@ public class MainActivity extends AppCompatActivity implements PlaceDetailDataMa
             Intent intent = new Intent(Intent.ACTION_CALL);
 
             intent.setData(Uri.parse("tel:0814953366"));
-            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.checkSelfPermission(Contextor.getInstance().getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(Contextor.getInstance().getContext(), Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                     startActivity(intent);
                 }
             }
